@@ -17,4 +17,9 @@ Open up your DVD Queue in one tab, and your MyList in another, and click the ext
 WARNINGS
 --------
 
-This is my first Chrome Extension, and first foray into HTML manipulation with JavaScript.  This extension is also very sensitive to UI changes made on the Netflix site
+This is my first Chrome Extension, and first foray into HTML manipulation with JavaScript.  This extension is also very sensitive to UI changes made on the Netflix site.  Therefore, it is likely to be broken, or likely to become broken without warning.  Even so, it's useful for me, so maybe it will be useful for you.
+
+ATTRIBUTIONS
+------------
+
+This extension uses https://www.allflicks.net/ to easily determine when a title is available for streaming in Netflix.  Thanks, AllFlicks!  Thanks also to the Chrome folks for their samples and documentation.  Finally, thanks to the staff at Netflix for removing useful features from their DVD Queue page--without whom I never would have made this extension.
