@@ -1,5 +1,5 @@
 # NetQFixer
-Chrome extension to color-code DVD Queue titles based on streamability and existence in MyList
+Chrome extension to color-code Netflix DVD Queue titles based on Netflix streamability and existence in your Netflix MyList
 
 I use Netflix for DVDs and streaming, and wanted a way to correlate the two, since Netflix removed that feature.  With this extension, the DVD Queue page becomes color-coded: Green for items also on MyList, Red for items that are streamable but not on MyList, and Black for everything else (DVDs that are not streamable).
 
