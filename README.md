@@ -3,6 +3,8 @@ Chrome extension to color-code Netflix DVD Queue titles based on Netflix streama
 
 I use Netflix for DVDs and streaming, and wanted a way to correlate the two, since Netflix removed that feature.  With this extension, the DVD Queue page becomes color-coded: Green for items also on MyList, Red for items that are streamable but not on MyList, and Black for everything else (DVDs that are not streamable).
 
+Customers of Netflix DVD who don't have streaming can still use this extension, which will just assume your MyList is empty.
+
 INSTALLATION
 ------------
 
@@ -12,7 +14,7 @@ Don't ever trust anyone who tells you to enable Developer Mode in Chrome, and th
 USE
 ---
 
-Open up your DVD Queue in one tab, and your MyList in another, and click the extension button (icon is "NQ" with a smiley face; I'm not an artist).  The extension will figure out which tab is which based on the URL, and start the color-coding.  You will notice the titles gradually become bold as a determination is made for each one (On MyList=Green, Not on MyList but is streamable=Red, or Not streamable=Black).  Should take several seconds.  When it's done, if anything is left unbold, then something went wrong.  Go debug it!
+Open up your DVD Queue in one tab, and your MyList in another (optional), and click the extension button (icon is "NQ" with a smiley face; I'm not an artist).  The extension will figure out which tab is which based on the URL, and start the color-coding.  You will notice the titles gradually become bold as a determination is made for each one (On MyList=Green, Not on MyList but is streamable=Red, or Not streamable=Black).  Should take several seconds.  When it's done, if anything is left unbold, then something went wrong.  Go debug it!  If you do not have a tab open to your streaming MyList, the extension gives you the option to proceed, assuming your MyList is empty.
 
 WARNINGS
 --------
