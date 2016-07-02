@@ -12,6 +12,7 @@ function getNetflixTabID(isDvd, callback)
     }
 
     console.log("Calling chrome.tabs.query");
+    var id;
     chrome.tabs.query(queryInfo, function (tabs)
     {
         if (tabs == null || tabs.length < 1)
@@ -19,16 +20,28 @@ function getNetflixTabID(isDvd, callback)
             if (isDvd)
             {
                 window.alert("Could not find an open tab with 'netflix.com' and 'Queue' in the URL");
+                return;
             }
             else
             {
-                window.alert("Could not find an open tab with 'netflix.com' and 'my-list' in the URL");
+                var response = window.confirm("Could not find an open tab with 'netflix.com' and 'my-list' in the URL.  If you proceed, NetQFixer will assume your streaming MyList is empty.");
+                if (response)
+                {
+                    id = null;
+                }
+                else
+                {
+                    return;
+                }
             }
-            return;
+        }
+        else
+        {
+            id = tabs[0].id;
         }
 
-        console.log("chrome.tabs.query found tab id " + tabs[0].id);
-        callback(tabs[0].id);
+        console.log("chrome.tabs.query found tab id " + (id == null) ? "(none)" : id);
+        callback(id);
     });
 }
 
@@ -51,34 +64,38 @@ chrome.browserAction.onClicked.addListener(function (tab)
         // Find the dvd Queue tab
         getNetflixTabID(true, function (dvdQueueTabID)
         {
-            chrome.runtime.onMessage.addListener(
-                function (request, sender, sendResponse)
-                {
-                    // (2) Extension receives message from MyList tab containing streamingMovieAnchors
-                    console.log("(2) NetQFixer browser action received message from MyList tab; sending streamingMovieAnchors to DVD Queue tab next");
+            if (myListTabID != null)
+            {
+                chrome.runtime.onMessage.addListener(
+                    function (request, sender, sendResponse)
+                    {
+                        // (2) Extension receives message from MyList tab containing streamingMovieAnchors
+                        console.log("(2) NetQFixer browser action received message from MyList tab; sending streamingMovieAnchors to DVD Queue tab next");
 
-                    // (3) EXTENSION sends message to DVD Queue TAB containing streamingMovieAnchors
-                    console.log("(3) EXTENSION sends message to DVD Queue TAB containing streamingMovieAnchors");
-                    chrome.tabs.sendMessage(
-                        dvdQueueTabID,
-                        request,            // Contains streamingMovieAnchors field
-                        null);              // No response callback
-                });
+                        // (3) EXTENSION sends message to DVD Queue TAB containing streamingMovieAnchors
+                        console.log("(3) EXTENSION sends message to DVD Queue TAB containing streamingMovieAnchors");
+                        chrome.tabs.sendMessage(
+                            dvdQueueTabID,
+                            request,            // Contains streamingMovieAnchors field
+                            null);              // No response callback
+                    });
+
+                // (1) When the browser action icon is clicked, inject content scripts into both pages
+
+                // --- (MyList tab)
+                console.log("About to inject into the MyList tab");
+                chrome.tabs.executeScript(
+                    myListTabID,
+                    { file: "NetQFixer_Common_Content_Script.js" }
+                    );
+                chrome.tabs.executeScript(
+                    myListTabID,
+                    { file: "NetQFixer_MyList_Content_Script.js" }
+                    );
+            }
 
             // (1) When the browser action icon is clicked, inject content scripts into both pages
-
-            // ---
-            console.log("About to inject into the MyList tab");
-            chrome.tabs.executeScript(
-                myListTabID,
-                { file: "NetQFixer_Common_Content_Script.js" }
-                );
-            chrome.tabs.executeScript(
-                myListTabID,
-                { file: "NetQFixer_MyList_Content_Script.js" }
-                );
-
-            // ---
+            // --- (DvdQ tab)
             console.log("About to inject into the DvdQ tab");
             chrome.tabs.executeScript(
                 dvdQueueTabID,
@@ -88,6 +105,17 @@ chrome.browserAction.onClicked.addListener(function (tab)
                 dvdQueueTabID,
                 { file: "NetQFixer_DvdQ_Content_Script.js" }
                 );
+
+            if (myListTabID == null)
+            {
+                // (3) EXTENSION sends message to DVD Queue TAB containing an empty streamingMovieAnchors
+                // b/c there's no MyList tab
+                console.log("(3) EXTENSION sends message to DVD Queue TAB containing EMPTY streamingMovieAnchors");
+                chrome.tabs.sendMessage(
+                    dvdQueueTabID,
+                    { streamingMovieAnchors: [] },      // Empty streamingMovieAnchors hash
+                    null);                              // No response callback
+            }
         });
     });
 });
