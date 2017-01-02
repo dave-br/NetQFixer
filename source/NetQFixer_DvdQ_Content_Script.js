@@ -1,6 +1,10 @@
 console.log("NetQFixer_DvdQ_Content_Script.js says hello");
 
-var STREAMING_TITLE_URL_PREFIX = "https://www.allflicks.net/movies/";
+// NOTE: If you change this URL, remember to add the URL to the manifest.js
+// permissions list
+//var STREAMING_TITLE_URL_PREFIX = "https://www.allflicks.net/movies/";
+//var STREAMING_TITLE_URL_PREFIX = "http://www.flixlist.co/titles/";
+var STREAMING_TITLE_URL_PREFIX = "http://instantwatcher.com/title/";
 
 main();
 
@@ -90,17 +94,37 @@ function adjustUnlistedDvdMovieAnchors(dvdMovieAnchors)
     }
 }
 
+// EXTENSION gives us raw response text when checking one title's availability for
+// streaming.  This wraps an HTMLDocument around it for easier parsing
+function getHtmlDocFromText(aHTMLString)
+{
+    var doc = document.implementation.createHTMLDocument("example");
+    doc.documentElement.innerHTML = aHTMLString;
+    return doc;
+}
+
+
 // Adjusts a single DVD movie anchor not on MyList to either red or black
 function adjustUnlistedDvdMovieAnchorFromStreamingUrl(url, dvdMovieAnchorArr, netfxMovieID)
 {
-    var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function ()
+    //console.log("DvdQ: Calling chrome.runtime.sendmessage to make GET request to " + url);
+    chrome.runtime.sendMessage({
+        method: 'GET',
+        action: 'xhttp',
+        url: url
+        //data: 'q=something'
+    }, function (responseText)
     {
-        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200)
+        //console.log("DvdQ: Received response from background script for url " + url);
+        if (responseText != null)
         {
-            console.log("Successful response received from " + url);
+            //console.log("Successful response received from " + url);
+
+            // Wrap an HTML Doc around the response text the EXTENSION procured for us
+            htmlDoc = getHtmlDocFromText(responseText);
+
             var color;
-            if (existsAnchorForMovieID(xhr.response, netfxMovieID))
+            if (existsAnchorForMovieID(htmlDoc, netfxMovieID))
             {
                 color = "red";
             }
@@ -114,11 +138,8 @@ function adjustUnlistedDvdMovieAnchorFromStreamingUrl(url, dvdMovieAnchorArr, ne
             {
                 adjustDvdMovieAnchor(dvdMovieAnchorArr[j], color);
             }
-        };
-    }
-    xhr.responseType = "document";
-    xhr.open("GET", url, true /* async */);
-    xhr.send();
+        }
+    });
 }
 
 // Returns a boolean indicating whether the given movie ID is available for streaming.

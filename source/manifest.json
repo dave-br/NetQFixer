@@ -19,6 +19,10 @@
     "http://*.netflix.com/*",
     "https://*.netflix.com/*",
 	"http://www.allflicks.net/*",
-	"https://www.allflicks.net/*"
+	"https://www.allflicks.net/*",
+	"http://www.flixlist.co/*",
+	"https://www.flixlist.co/*",
+	"http://instantwatcher.com/*",
+	"https://instantwatcher.com/*"
   ]
 }
