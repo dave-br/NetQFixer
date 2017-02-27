@@ -2,9 +2,20 @@ console.log("NetQFixer_DvdQ_Content_Script.js says hello");
 
 // NOTE: If you change this URL, remember to add the URL to the manifest.js
 // permissions list
-//var STREAMING_TITLE_URL_PREFIX = "https://www.allflicks.net/movies/";
+//
+// Gave "bad gateway" error for a month on individual title pages
+//var STREAMING_TITLE_URL_PREFIX = "http://instantwatcher.com/title/";
+//
+// Has detail pages for titles NOT on streaming (with links that go to bogus
+// streaming pages on netflix for the title but with no play button), and missing
+// detail pages for titles that ARE on streaming
 //var STREAMING_TITLE_URL_PREFIX = "http://www.flixlist.co/titles/";
-var STREAMING_TITLE_URL_PREFIX = "http://instantwatcher.com/title/";
+//
+// Changed URLS to go to "title" followed by name of movie instead of ID
+//var STREAMING_TITLE_URL_PREFIX = "https://www.allflicks.net/movies/";
+var STREAMING_TITLE_URL_PREFIX = "https://www.netflix.com/title/";
+
+
 
 main();
 
@@ -86,7 +97,7 @@ function adjustUnlistedDvdMovieAnchors(dvdMovieAnchors)
         // with sufficient delay between them so the web site doesn't get anxious
         nTimes++;
         window.setTimeout(
-            adjustUnlistedDvdMovieAnchorFromStreamingUrl,
+            adjustUnlistedDvdMovieAnchorFromStreamingUrlAtNetflixSite,
             200 * nTimes,
             streamingURL,
             dvdMovieAnchorArr,
@@ -104,8 +115,9 @@ function getHtmlDocFromText(aHTMLString)
 }
 
 
-// Adjusts a single DVD movie anchor not on MyList to either red or black
-function adjustUnlistedDvdMovieAnchorFromStreamingUrl(url, dvdMovieAnchorArr, netfxMovieID)
+// Adjusts a single DVD movie anchor not on MyList to either red or black by
+// using Netflix's own streaming site to see if the title is available
+function adjustUnlistedDvdMovieAnchorFromStreamingUrlAtNetflixSite(url, dvdMovieAnchorArr, netfxMovieID)
 {
     //console.log("DvdQ: Calling chrome.runtime.sendmessage to make GET request to " + url);
     chrome.runtime.sendMessage({
@@ -121,10 +133,10 @@ function adjustUnlistedDvdMovieAnchorFromStreamingUrl(url, dvdMovieAnchorArr, ne
             //console.log("Successful response received from " + url);
 
             // Wrap an HTML Doc around the response text the EXTENSION procured for us
-            htmlDoc = getHtmlDocFromText(responseText);
+            var htmlDoc = getHtmlDocFromText(responseText);
 
             var color;
-            if (existsAnchorForMovieID(htmlDoc, netfxMovieID))
+            if (existsWatchAnchorForMovieID(htmlDoc, netfxMovieID))
             {
                 color = "red";
             }
@@ -141,6 +153,57 @@ function adjustUnlistedDvdMovieAnchorFromStreamingUrl(url, dvdMovieAnchorArr, ne
         }
     });
 }
+
+// Returns a boolean indicating whether the given movie ID is available for streaming.
+// It does this by looking through htmlDoc for any anchors with a class known
+// to be a play link.  Note: Cannot search for all anchors with an HREF containing
+// the movie ID.  Even though the debugger shows the anchor looks like this:
+//
+// <a tabindex="0" to="[object Object]" role="link" aria-label="Play" class="overviewPlay playLink" // href="/watch/80098100?trackId=14277281&amp;tctx=0%2C0%2C8ec4b53f-4c35-4795-8934-ce0ea1366aea-// 158964263" data-reactid="58">
+//
+// the href property is for some reason the empty string(!!).
+//
+function existsWatchAnchorForMovieID(htmlDoc, netfxMovieID)
+{
+    var anchorNodeList = htmlDoc.getElementsByTagName("A");
+    for (var i = 0; i < anchorNodeList.length; i++)
+    {
+        if (anchorNodeList[i].className.indexOf("play") != -1)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+// Given a DVD Queue anchor, bold it and change its color
+function adjustDvdMovieAnchor(dvdMovieAnchorNode, color)
+{
+    // Set up <SPAN style="color:blah"><B>
+    var spanTag = document.createElement("SPAN");
+    spanTag.style.color = color;
+    var boldTag = document.createElement("B");
+    spanTag.appendChild(boldTag);
+
+    // Get the anchor's text
+    var textElement = dvdMovieAnchorNode.childNodes[0];
+
+    // Temporarily remove text from anchor
+    textElement = dvdMovieAnchorNode.removeChild(textElement);
+
+    // Make text the child of the bold tag instead
+    boldTag.appendChild(textElement);
+
+    // Put span tag where text used to be
+    dvdMovieAnchorNode.appendChild(spanTag);
+}
+
+// ************** OLD, UNUSED FUNCTIONS ************** 
+
+// OLD: This was used for checking third-party sites to see if a play-link
+// was available from them to netflix
 
 // Returns a boolean indicating whether the given movie ID is available for streaming.
 // It does this by looking through htmlDoc for any anchors containing an href
@@ -181,28 +244,6 @@ function existsAnchorForMovieID(htmlDoc, netfxMovieID)
 
     // Still here?  Didn't find an anchor for the movie
     return false;
-}
-
-// Given a DVD Queue anchor, bold it and change its color
-function adjustDvdMovieAnchor(dvdMovieAnchorNode, color)
-{
-    // Set up <SPAN style="color:blah"><B>
-    var spanTag = document.createElement("SPAN");
-    spanTag.style.color = color;
-    var boldTag = document.createElement("B");
-    spanTag.appendChild(boldTag);
-
-    // Get the anchor's text
-    var textElement = dvdMovieAnchorNode.childNodes[0];
-
-    // Temporarily remove text from anchor
-    textElement = dvdMovieAnchorNode.removeChild(textElement);
-
-    // Make text the child of the bold tag instead
-    boldTag.appendChild(textElement);
-
-    // Put span tag where text used to be
-    dvdMovieAnchorNode.appendChild(spanTag);
 }
 
 console.log("NetQFixer_DvdQ_Content_Script.js says goodbye");

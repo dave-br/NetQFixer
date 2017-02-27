@@ -108,7 +108,14 @@ chrome.browserAction.onClicked.addListener(function (tab)
 
                                 xhttp.onload = function ()
                                 {
-                                    sendResponse(xhttp.responseText);
+                                    if (xhttp.status == 200)
+                                    {
+                                        sendResponse(xhttp.responseText);
+                                    }
+                                    else
+                                    {
+                                        sendResponse(null);
+                                    }
                                 };
                                 xhttp.onerror = function ()
                                 {
