@@ -159,7 +159,9 @@ function adjustUnlistedDvdMovieAnchorFromStreamingUrlAtNetflixSite(url, dvdMovie
 // to be a play link.  Note: Cannot search for all anchors with an HREF containing
 // the movie ID.  Even though the debugger shows the anchor looks like this:
 //
-// <a tabindex="0" to="[object Object]" role="link" aria-label="Play" class="overviewPlay playLink" // href="/watch/80098100?trackId=14277281&amp;tctx=0%2C0%2C8ec4b53f-4c35-4795-8934-ce0ea1366aea-// 158964263" data-reactid="58">
+// <a tabindex="0" to="[object Object]" role="link" aria-label="Play" class="overviewPlay playLink" 
+// href="/watch/80098100?trackId=14277281&amp;tctx=0%2C0%2C8ec4b53f-4c35-4795-8934-ce0ea1366aea-
+// 158964263" data-reactid="58">
 //
 // the href property is for some reason the empty string(!!).
 //
@@ -168,7 +170,8 @@ function existsWatchAnchorForMovieID(htmlDoc, netfxMovieID)
     var anchorNodeList = htmlDoc.getElementsByTagName("A");
     for (var i = 0; i < anchorNodeList.length; i++)
     {
-        if (anchorNodeList[i].className.indexOf("play") != -1)
+        if ((anchorNodeList[i].className.indexOf("play") != -1) &&
+            (anchorNodeList[i].href.indexOf(netfxMovieID) != -1))	// JUST NOW
         {
             return true;
         }
