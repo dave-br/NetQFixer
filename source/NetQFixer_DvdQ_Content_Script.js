@@ -142,7 +142,7 @@ function adjustUnlistedDvdMovieAnchorFromStreamingUrlAtNetflixSite(url, dvdMovie
             }
             else
             {
-                color = "black";
+                color = "gray";
             }
 
             // Set all anchors for this movieID to color

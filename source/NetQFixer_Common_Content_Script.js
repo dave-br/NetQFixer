@@ -62,7 +62,8 @@ function findMovieAnchors(isDvd /*true for DVD queue, false for streaming queue 
             var iQuestion = hrefComponents[5].indexOf("?");
             if (iQuestion == -1)
             {
-                continue;
+                //continue;
+                iQuestion = hrefComponents[5].length;
             }
 
             // Looks like the kind of anchor we want.  Before we commit to using the movie ID from the href,
