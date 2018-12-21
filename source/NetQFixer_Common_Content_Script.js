@@ -77,7 +77,7 @@ function findMovieAnchors(isDvd /*true for DVD queue, false for streaming queue 
             var div = getClosestParentDiv(anchorNodeList[i]);
             if (div != null)
             {
-                var temp = div.getAttribute("data-series-parent-id");
+                var temp = div.getAttribute("data-show-parent");
                 if (temp != null && temp != undefined && temp != "")
                 {
                     // Looks good--use this as the movieID field instead
@@ -122,7 +122,7 @@ function getClosestParentDiv(anchorElement)
 {
     var ret = anchorElement;
 
-    while (ret.nodeName.toLowerCase() != "div")
+    while (ret.nodeName.toLowerCase() != "li")
     {
         ret = ret.parentElement;
         if (ret == null)
