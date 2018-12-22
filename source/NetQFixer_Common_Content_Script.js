@@ -118,6 +118,7 @@ function findMovieAnchors(isDvd /*true for DVD queue, false for streaming queue 
 }
 
 // Given an <A> element keep going up parent elements until we find the first DIV
+// -- changed to look for LI
 function getClosestParentDiv(anchorElement)
 {
     var ret = anchorElement;

@@ -117,9 +117,12 @@ function getHtmlDocFromText(aHTMLString)
 
 // Adjusts a single DVD movie anchor not on MyList to either red or black by
 // using Netflix's own streaming site to see if the title is available
+// New approach: Don't make call to netflix streaming site.  Just look for play
+// button in dvdq, since they appear to show one now.
 function adjustUnlistedDvdMovieAnchorFromStreamingUrlAtNetflixSite(url, dvdMovieAnchorArr, netfxMovieID)
 {
     //console.log("DvdQ: Calling chrome.runtime.sendmessage to make GET request to " + url);
+/*
     chrome.runtime.sendMessage({
         method: 'GET',
         action: 'xhttp',
@@ -130,6 +133,7 @@ function adjustUnlistedDvdMovieAnchorFromStreamingUrlAtNetflixSite(url, dvdMovie
         //console.log("DvdQ: Received response from background script for url " + url);
         if (responseText != null)
         {
+
             //console.log("Successful response received from " + url);
 
             // Wrap an HTML Doc around the response text the EXTENSION procured for us
@@ -144,14 +148,36 @@ function adjustUnlistedDvdMovieAnchorFromStreamingUrlAtNetflixSite(url, dvdMovie
             {
                 color = "gray";
             }
+*/
 
+            
             // Set all anchors for this movieID to color
             for (var j = 0; j < dvdMovieAnchorArr.length; j++)
             {
+                // Find peer divs (children of this anchor's parent), to see if one has
+                // class of Play with a button inside
+                var color = "gray";
+                var parentLI = getClosestParentDiv(dvdMovieAnchorArr[j]);
+                var divNodeList = parentLI.getElementsByTagName("DIV");
+                for (var i = 0; i < divNodeList.length; i++)
+                {
+                    if (divNodeList[i].className.indexOf("play") != -1)
+                    {
+                        if (divNodeList[i].getElementsByTagName("BUTTON").length > 0)
+                        {
+                            color = "red";
+                            break;
+                        }
+                    }
+                }
+
                 adjustDvdMovieAnchor(dvdMovieAnchorArr[j], color);
             }
+
+/*
         }
     });
+*/
 }
 
 // Returns a boolean indicating whether the given movie ID is available for streaming.
